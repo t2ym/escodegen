@@ -101,13 +101,15 @@
         BitwiseSHIFT: 10,
         Additive: 11,
         Multiplicative: 12,
-        Unary: 13,
-        Postfix: 14,
-        Call: 15,
-        New: 16,
-        TaggedTemplate: 17,
-        Member: 18,
-        Primary: 19
+        Exponentiation: 13,
+        Unary: 14,
+        ExponentiationWithUnaryAtLeft: 15,
+        Postfix: 16,
+        Call: 17,
+        New: 18,
+        TaggedTemplate: 19,
+        Member: 20,
+        Primary: 21
     };
 
     BinaryPrecedence = {
@@ -135,7 +137,8 @@
         '-': Precedence.Additive,
         '*': Precedence.Multiplicative,
         '%': Precedence.Multiplicative,
-        '/': Precedence.Multiplicative
+        '/': Precedence.Multiplicative,
+        '**': Precedence.Exponentiation
     };
 
     //Flags
@@ -1848,7 +1851,12 @@
                 flags |= F_ALLOW_IN;
             }
 
-            fragment = this.generateExpression(expr.left, currentPrecedence, flags);
+            if (currentPrecedence === Precedence.Exponentiation && expr.left.type === 'UnaryExpression') {
+                fragment = this.generateExpression(expr.left, Precedence.ExponentiationWithUnaryAtLeft, flags);
+            }
+            else {
+                fragment = this.generateExpression(expr.left, currentPrecedence, flags);
+            }
 
             leftSource = fragment.toString();
 
