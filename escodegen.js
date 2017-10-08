@@ -987,14 +987,14 @@
         return result;
     };
 
-    CodeGenerator.prototype.generatePropertyKey = function (expr, computed, value) {
+    CodeGenerator.prototype.generatePropertyKey = function (expr, computed, value, noShorthand) {
         var result = [];
 
         if (computed) {
             result.push('[');
         }
 
-        if (value.type === 'AssignmentPattern' && expr.name === value.left.name) {
+        if (value.type === 'AssignmentPattern' && expr.name === value.left.name && !noShorthand) {
             result.push(this.AssignmentPattern(value, Precedence.Sequence, E_TTT));
         } else {
             result.push(this.generateExpression(expr, Precedence.Sequence, E_TTT));
@@ -2169,7 +2169,7 @@
             }
 
             return [
-                this.generatePropertyKey(expr.key, expr.computed, expr.value),
+                this.generatePropertyKey(expr.key, expr.computed, expr.value, true),
                 ':' + space,
                 this.generateExpression(expr.value, Precedence.Assignment, E_TTT)
             ];
