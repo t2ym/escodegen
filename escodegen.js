@@ -73,6 +73,8 @@
     estraverse.VisitorKeys.ExperimentalSpreadProperty = ['argument'];
     Syntax.ExperimentalRestProperty = 'ExperimentalRestProperty';
     estraverse.VisitorKeys.ExperimentalRestProperty = ['argument'];
+    Syntax.Import = 'Import';
+    estraverse.VisitorKeys.Import = [];
 
     // Generation is done by generateExpression.
     function isExpression(node) {
@@ -2281,6 +2283,10 @@
 
         Identifier: function (expr, precedence, flags) {
             return generateIdentifier(expr);
+        },
+
+        Import: function (expr, precedence, flags) {
+            return 'import';
         },
 
         ImportDefaultSpecifier: function (expr, precedence, flags) {
