@@ -510,6 +510,203 @@ data = {
     },
 
     'Object destructuring (and aliasing)':  {
+        "let {\n    test: myvar = 'a'\n} = { test: 'b' };": {
+            generateFrom: {
+                loc: {
+                    start: {
+                        line: 1,
+                        column: 0
+                    },
+                    end: {
+                        line: 3,
+                        column: 23
+                    }
+                },
+                type: "Program",
+                body: [
+                    {
+                    loc: {
+                        start: {
+                            line: 1,
+                            column: 0
+                        },
+                        end: {
+                            line: 3,
+                            column: 23
+                        }
+                    },
+                    type: "VariableDeclaration",
+                    declarations: [
+                        {
+                        loc: {
+                            start: {
+                                line: 1,
+                                column: 4
+                            },
+                            end: {
+                                line: 3,
+                                column: 22
+                            }
+                        },
+                        type: "VariableDeclarator",
+                        id: {
+                            loc: {
+                                start: {
+                                    line: 1,
+                                    column: 4
+                                },
+                                end: {
+                                    line: 3,
+                                    column: 1
+                                }
+                            },
+                            type: "ObjectPattern",
+                            properties: [
+                                {
+                                loc: {
+                                    start: {
+                                        line: 2,
+                                        column: 4
+                                    },
+                                    end: {
+                                        line: 2,
+                                        column: 27
+                                    }
+                                },
+                                type: "Property",
+                                key: {
+                                    loc: {
+                                        start: {
+                                            line: 2,
+                                            column: 4
+                                        },
+                                        end: {
+                                            line: 2,
+                                            column: 8
+                                        }
+                                    },
+                                    type: "Identifier",
+                                    name: "test"
+                                },
+                                computed: false,
+                                value: {
+                                    loc: {
+                                        start: {
+                                            line: 2,
+                                            column: 10
+                                        },
+                                        end: {
+                                            line: 2,
+                                            column: 27
+                                        }
+                                    },
+                                    type: "AssignmentPattern",
+                                    left: {
+                                        loc: {
+                                            start: {
+                                                line: 2,
+                                                column: 10
+                                            },
+                                            end: {
+                                                line: 2,
+                                                column: 15
+                                            }
+                                        },
+                                        type: "Identifier",
+                                        name: "myvar"
+                                    },
+                                    right: {
+                                        loc: {
+                                            start: {
+                                                line: 2,
+                                                column: 18
+                                            },
+                                            end: {
+                                                line: 2,
+                                                column: 27
+                                            }
+                                        },
+                                        type: "Literal",
+                                        value: "a",
+                                        raw: "'a'"
+                                    }
+                                },
+                                kind: "init",
+                                method: false,
+                                shorthand: false
+                            }
+                            ]
+                        },
+                        init: {
+                            loc: {
+                                start: {
+                                    line: 3,
+                                    column: 4
+                                },
+                                end: {
+                                    line: 3,
+                                    column: 22
+                                }
+                            },
+                            type: "ObjectExpression",
+                            properties: [
+                                {
+                                loc: {
+                                    start: {
+                                        line: 3,
+                                        column: 6
+                                    },
+                                    end: {
+                                        line: 3,
+                                        column: 20
+                                    }
+                                },
+                                type: "Property",
+                                key: {
+                                    loc: {
+                                        start: {
+                                            line: 3,
+                                            column: 6
+                                        },
+                                        end: {
+                                            line: 3,
+                                            column: 10
+                                        }
+                                    },
+                                    type: "Identifier",
+                                    name: "test"
+                                },
+                                computed: false,
+                                value: {
+                                    loc: {
+                                        start: {
+                                            line: 3,
+                                            column: 12
+                                        },
+                                        end: {
+                                            line: 3,
+                                            column: 20
+                                        }
+                                    },
+                                    type: "Literal",
+                                    value: "b",
+                                    raw: "'b'"
+                                },
+                                kind: "init",
+                                method: false,
+                                shorthand: false
+                            }
+                            ]
+                        }
+                    }
+                    ],
+                    kind: "let"
+                }
+                ],
+                sourceType: "script"
+            }
+        },
+
         '({a = "b", b = {\n        c: "d",\n        e: "f"\n    }} = {}) => {\n};': {
             generateFrom: {
                 type: "ExpressionStatement",
@@ -6011,7 +6208,176 @@ data = {
                 "async": true
             }
         },
+    },
+
+    'ES2018 for-await-of': {
+        'async function f() {\n    for await (const x of ait) {\n        console.log(x);\n    }\n}': {
+            generateFrom: {
+                "type": "FunctionDeclaration",
+                "id": {
+                    "type": "Identifier",
+                    "name": "f"
+                },
+                "params": [],
+                "body": {
+                    "type": "BlockStatement",
+                    "body": [
+                        {
+                            "type": "ForOfStatement",
+                            "left": {
+                                "type": "VariableDeclaration",
+                                "declarations": [
+                                    {
+                                        "type": "VariableDeclarator",
+                                        "id": {
+                                            "type": "Identifier",
+                                            "name": "x"
+                                        },
+                                        "init": null
+                                    }
+                                ],
+                                "kind": "const"
+                            },
+                            "right": {
+                                "type": "Identifier",
+                                "name": "ait"
+                            },
+                            "body": {
+                                "type": "BlockStatement",
+                                "body": [
+                                    {
+                                        "type": "ExpressionStatement",
+                                        "expression": {
+                                            "type": "CallExpression",
+                                            "callee": {
+                                                "type": "MemberExpression",
+                                                "object": {
+                                                    "type": "Identifier",
+                                                    "name": "console"
+                                                },
+                                                "property": {
+                                                    "type": "Identifier",
+                                                    "name": "log"
+                                                },
+                                                "computed": false
+                                            },
+                                            "arguments": [
+                                                {
+                                                    "type": "Identifier",
+                                                    "name": "x"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "await": true
+                        }
+                    ]
+                },
+                "generator": false,
+                "async": true
+            }
+        }
+
+    },
+
+    'ES2018 async generator method': {
+        'class C {\n    async *readLines(file) {\n        while (!file.EOF) {\n            yield await file.readLine();\n        }\n    }\n}': {
+            generateFrom: {
+                "type": "ClassDeclaration",
+                "id": {
+                    "type": "Identifier",
+                    "name": "C"
+                },
+                "superClass": null,
+                "body": {
+                    "type": "ClassBody",
+                    "body": [
+                        {
+                            "type": "MethodDefinition",
+                            "key": {
+                                "type": "Identifier",
+                                "name": "readLines"
+                            },
+                            "value": {
+                                "type": "FunctionExpression",
+                                "id": null,
+                                "params": [
+                                    {
+                                        "type": "Identifier",
+                                        "name": "file"
+                                    }
+                                ],
+                                "body": {
+                                    "type": "BlockStatement",
+                                    "body": [
+                                        {
+                                            "type": "WhileStatement",
+                                            "test": {
+                                                "type": "UnaryExpression",
+                                                "operator": "!",
+                                                "prefix": true,
+                                                "argument": {
+                                                    "type": "MemberExpression",
+                                                    "object": {
+                                                        "type": "Identifier",
+                                                        "name": "file"
+                                                    },
+                                                    "property": {
+                                                        "type": "Identifier",
+                                                        "name": "EOF"
+                                                    },
+                                                    "computed": false
+                                                }
+                                            },
+                                            "body": {
+                                                "type": "BlockStatement",
+                                                "body": [
+                                                    {
+                                                        "type": "ExpressionStatement",
+                                                        "expression": {
+                                                            "type": "YieldExpression",
+                                                            "argument": {
+                                                                "type": "AwaitExpression",
+                                                                "argument": {
+                                                                    "type": "CallExpression",
+                                                                    "callee": {
+                                                                        "type": "MemberExpression",
+                                                                        "object": {
+                                                                            "type": "Identifier",
+                                                                            "name": "file"
+                                                                        },
+                                                                        "property": {
+                                                                            "type": "Identifier",
+                                                                            "name": "readLine"
+                                                                        },
+                                                                        "computed": false
+                                                                    },
+                                                                    "arguments": []
+                                                                }
+                                                            },
+                                                            "delegate": false
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                "generator": true,
+                                "async": true
+                            },
+                            "kind": "method",
+                            "computed": false,
+                            "static": false
+                        }
+                    ]
+                }
+            }
+        }
     }
+
 };
 
 function updateDeeply(target, override) {

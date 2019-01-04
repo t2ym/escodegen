@@ -43,7 +43,6 @@
         SourceNode,
         estraverse,
         esutils,
-        isArray,
         base,
         indent,
         json,
@@ -225,13 +224,6 @@
         }
 
         return result;
-    }
-
-    isArray = Array.isArray;
-    if (!isArray) {
-        isArray = function isArray(array) {
-            return Object.prototype.toString.call(array) === '[object Array]';
-        };
     }
 
     function hasLineTerminator(str) {
@@ -514,7 +506,7 @@
         var i, iz, elem, result = '';
         for (i = 0, iz = arr.length; i < iz; ++i) {
             elem = arr[i];
-            result += isArray(elem) ? flattenToString(elem) : elem;
+            result += Array.isArray(elem) ? flattenToString(elem) : elem;
         }
         return result;
     }
@@ -527,7 +519,7 @@
             // with no source maps, generated is either an
             // array or a string.  if an array, flatten it.
             // if a string, just return it
-            if (isArray(generated)) {
+            if (Array.isArray(generated)) {
                 return flattenToString(generated);
             } else {
                 return generated;
@@ -885,13 +877,15 @@
     }
 
     function generateMethodPrefix(prop) {
-        var func = prop.value;
+        var func = prop.value, prefix = '';
         if (func.async) {
-            return generateAsyncPrefix(func, !prop.computed);
-        } else {
-            // avoid space before method name
-            return generateStarSuffix(func) ? '*' : '';
+            prefix += generateAsyncPrefix(func, !prop.computed);
         }
+        if (func.generator) {
+            // avoid space before method name
+            prefix += generateStarSuffix(func) ? '*' : '';
+        }
+        return prefix;
     }
 
     CodeGenerator.prototype.generatePattern = function (node, precedence, flags) {
@@ -968,7 +962,7 @@
     };
 
     CodeGenerator.prototype.generateIterationForStatement = function (operator, stmt, flags) {
-        var result = ['for' + space + '('], that = this;
+        var result = ['for' + space + (stmt.await ? 'await' + space : '') + '('], that = this;
         withIndent(function () {
             if (stmt.left.type === Syntax.VariableDeclaration) {
                 withIndent(function () {
@@ -982,25 +976,21 @@
             result = join(result, operator);
             result = [join(
                 result,
-                that.generateExpression(stmt.right, Precedence.Sequence, E_TTT)
+                that.generateExpression(stmt.right, Precedence.Assignment, E_TTT)
             ), ')'];
         });
         result.push(this.maybeBlock(stmt.body, flags));
         return result;
     };
 
-    CodeGenerator.prototype.generatePropertyKey = function (expr, computed, value, noShorthand) {
+    CodeGenerator.prototype.generatePropertyKey = function (expr, computed) {
         var result = [];
 
         if (computed) {
             result.push('[');
         }
 
-        if (value.type === 'AssignmentPattern' && expr.name === value.left.name && !noShorthand) {
-            result.push(this.AssignmentPattern(value, Precedence.Sequence, E_TTT));
-        } else {
-            result.push(this.generateExpression(expr, Precedence.Sequence, E_TTT));
-        }
+        result.push(this.generateExpression(expr, Precedence.Sequence, E_TTT));
 
         if (computed) {
             result.push(']');
@@ -1534,7 +1524,7 @@
 
                 // new interface
                 if (stmt.handler) {
-                    if (isArray(stmt.handler)) {
+                    if (Array.isArray(stmt.handler)) {
                         for (i = 0, iz = stmt.handler.length; i < iz; ++i) {
                             result = join(result, this.generateStatement(stmt.handler[i], S_TFFF));
                             if (stmt.finalizer || i + 1 !== iz) {
@@ -1969,9 +1959,9 @@
         MetaProperty: function (expr, precedence, flags) {
             var result;
             result = [];
-            result.push(expr.meta);
+            result.push(typeof expr.meta === "string" ? expr.meta : generateIdentifier(expr.meta));
             result.push('.');
-            result.push(expr.property);
+            result.push(typeof expr.property === "string" ? expr.property : generateIdentifier(expr.property));
             return parenthesize(result, Precedence.Member, precedence);
         },
 
@@ -2136,13 +2126,13 @@
             }
             if (expr.kind === 'get' || expr.kind === 'set') {
                 fragment = [
-                    join(expr.kind, this.generatePropertyKey(expr.key, expr.computed, expr.value)),
+                    join(expr.kind, this.generatePropertyKey(expr.key, expr.computed)),
                     this.generateFunctionBody(expr.value)
                 ];
             } else {
                 fragment = [
                     generateMethodPrefix(expr),
-                    this.generatePropertyKey(expr.key, expr.computed, expr.value),
+                    this.generatePropertyKey(expr.key, expr.computed),
                     this.generateFunctionBody(expr.value)
                 ];
             }
@@ -2153,25 +2143,28 @@
             if (expr.kind === 'get' || expr.kind === 'set') {
                 return [
                     expr.kind, noEmptySpace(),
-                    this.generatePropertyKey(expr.key, expr.computed, expr.value),
+                    this.generatePropertyKey(expr.key, expr.computed),
                     this.generateFunctionBody(expr.value)
                 ];
             }
 
             if (expr.shorthand) {
-                return this.generatePropertyKey(expr.key, expr.computed, expr.value);
+                if (expr.value.type === "AssignmentPattern") {
+                    return this.AssignmentPattern(expr.value, Precedence.Sequence, E_TTT);
+                }
+                return this.generatePropertyKey(expr.key, expr.computed);
             }
 
             if (expr.method) {
                 return [
                     generateMethodPrefix(expr),
-                    this.generatePropertyKey(expr.key, expr.computed, expr.value),
+                    this.generatePropertyKey(expr.key, expr.computed),
                     this.generateFunctionBody(expr.value)
                 ];
             }
 
             return [
-                this.generatePropertyKey(expr.key, expr.computed, expr.value, true),
+                this.generatePropertyKey(expr.key, expr.computed),
                 ':' + space,
                 this.generateExpression(expr.value, Precedence.Assignment, E_TTT)
             ];
